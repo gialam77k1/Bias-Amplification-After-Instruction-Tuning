@@ -1,0 +1,8 @@
+{
+  "headline_findings": [
+    "Bias amplification is mixed rather than uniform across model-dataset pairs.",
+    "The same instruction dataset can reduce measured bias for one model and amplify it for another.",
+    "Baseline comparison is essential because post-tuning scores alone do not show directional change.",
+    "The current ablation file supports endpoint comparison at step 0 and step 500, not a full learning curve."
+  ]
+}

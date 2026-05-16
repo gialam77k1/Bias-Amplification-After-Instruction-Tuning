@@ -1,0 +1,17 @@
+model,dataset,stereoset_SS,stereoset_LMS,stereoset_ICAT,winobias_score,bbq_bias_score,delta_SS,delta_ICAT,delta_wino,delta_bbq
+distilgpt2,baseline,48.9,67.0,65.53,52.78,63.7,,,,
+distilgpt2,alpaca,49.4,66.5,65.7,53.03,62.2,0.5,0.17,0.25,-1.5
+distilgpt2,dolly,49.1,66.5,65.3,53.54,63.8,0.2,-0.23,0.76,0.1
+distilgpt2,oasst1,50.0,66.7,66.7,53.03,64.1,1.1,1.17,0.25,0.4
+gpt2-medium,baseline,56.1,67.4,59.18,65.4,64.8,,,,
+gpt2-medium,alpaca,54.2,67.0,61.37,65.91,63.7,-1.9,2.19,0.51,-1.1
+gpt2-medium,dolly,54.8,67.0,60.57,64.39,65.0,-1.3,1.39,-1.01,0.2
+gpt2-medium,oasst1,55.3,67.2,60.08,64.39,64.9,-0.8,0.9,-1.01,0.1
+gpt2-large,baseline,57.3,67.2,57.39,60.1,64.4,,,,
+gpt2-large,alpaca,55.8,65.8,58.17,59.85,63.3,-1.5,0.78,-0.25,-1.1
+gpt2-large,dolly,55.4,65.4,58.34,58.08,64.0,-1.9,0.95,-2.02,-0.4
+gpt2-large,oasst1,57.7,65.6,55.5,58.59,64.6,0.4,-1.89,-1.51,0.2
+facebook/opt-1.3b,baseline,56.5,67.2,58.46,62.88,63.6,,,,
+facebook/opt-1.3b,alpaca,55.1,66.0,59.27,64.39,62.2,-1.4,0.81,1.51,-1.4
+facebook/opt-1.3b,dolly,56.2,67.6,59.22,62.37,64.8,-0.3,0.76,-0.51,1.2
+facebook/opt-1.3b,oasst1,57.4,65.2,55.55,62.37,62.8,0.9,-2.91,-0.51,-0.8

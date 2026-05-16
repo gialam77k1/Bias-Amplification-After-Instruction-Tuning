@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bias Amplification Demo</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+    <script src="{{ url_for('static', filename='vendor/plotly.min.js') }}"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand-block">
+        <div class="brand-row">
+          <img
+            class="site-logo"
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Bias Amplification Demo logo"
+          />
+          <div class="brand-copy">
+            <p class="eyebrow">Bias Amplification Demo</p>
+            <h1>Analyze Bias Amplification After Instruction Tuning</h1>
+            <p class="lead">
+              A bright, lightweight research demo for comparing baseline and instruction-tuned
+              models across StereoSet, WinoBias, and BBQ.
+            </p>
+          </div>
+        </div>
+      </div>
+      <nav class="top-nav">
+        <button class="view-tab active" data-view="overview">Overview</button>
+        <button class="view-tab" data-view="dashboard">Dashboard</button>
+        <button class="view-tab" data-view="explorer">Explorer</button>
+        <button class="view-tab" data-view="test-lab">Test Lab</button>
+        <button class="view-tab" data-view="ablation">Ablation</button>
+        <button class="view-tab" data-view="methodology">Methodology</button>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      <section id="app-status" class="panel status-panel hidden">
+        <div class="section-heading">
+          <p class="section-kicker">Status</p>
+          <h2>Frontend status</h2>
+        </div>
+        <p id="app-status-text" class="body-copy"></p>
+      </section>
+
+      <section id="overview" class="panel hero-panel content-view active-view">
+        <div class="section-heading">
+          <p class="section-kicker">Overview</p>
+          <h2>Experiment scope at a glance</h2>
+        </div>
+        <div id="overview-cards" class="metric-grid"></div>
+        <div class="two-column">
+          <div class="panel inset">
+            <h3>Project scope</h3>
+            <div id="scope-summary" class="scope-grid"></div>
+          </div>
+          <div class="panel inset">
+            <h3>Key findings</h3>
+            <ul id="key-findings" class="clean-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard" class="panel content-view">
+        <div class="section-heading">
+          <p class="section-kicker">Dashboard</p>
+          <h2>Amplification patterns across models and datasets</h2>
+        </div>
+        <div class="chart-card">
+          <div id="heatmap-chart" class="chart"></div>
+        </div>
+        <div class="two-column">
+          <div class="chart-card"><div id="model-bar-chart" class="chart small"></div></div>
+          <div class="chart-card"><div id="dataset-bar-chart" class="chart small"></div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-head">
+            <h3>Full result table</h3>
+          </div>
+          <div class="table-wrap">
+            <table id="summary-table"></table>
+          </div>
+        </div>
+      </section>
+
+      <section id="explorer" class="panel content-view">
+        <div class="section-heading">
+          <p class="section-kicker">Model-Dataset Explorer</p>
+          <h2>Inspect one model and one instruction dataset in detail</h2>
+        </div>
+        <div class="control-grid">
+          <label>
+            <span>Model</span>
+            <select id="explorer-model"></select>
+          </label>
+          <label>
+            <span>Dataset</span>
+            <select id="explorer-dataset"></select>
+          </label>
+        </div>
+        <div id="explorer-metrics" class="metric-grid compact"></div>
+        <div class="two-column">
+          <div class="chart-card"><div id="explorer-delta-chart" class="chart small"></div></div>
+          <div class="panel inset">
+            <h3>Interpretation</h3>
+            <p id="explorer-interpretation" class="body-copy"></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="test-lab" class="panel content-view">
+        <div class="section-heading">
+          <p class="section-kicker">Test Lab</p>
+          <h2>Benchmark cases plus live qualitative prompt testing</h2>
+        </div>
+        <div class="tab-switch">
+          <button class="tab-button active" data-tab="benchmark-tab">Benchmark Test</button>
+          <button class="tab-button" data-tab="custom-tab">Custom Prompt Test</button>
+        </div>
+
+        <div id="benchmark-tab" class="tab-panel active">
+          <div class="control-grid">
+            <label><span>Benchmark</span><select id="case-benchmark"></select></label>
+            <label><span>Bias type</span><select id="case-bias-type"></select></label>
+            <label><span>Test case</span><select id="case-title"></select></label>
+            <label><span>Model</span><select id="case-model"></select></label>
+            <label><span>Dataset</span><select id="case-dataset"></select></label>
+          </div>
+          <div class="two-column">
+            <div class="panel inset">
+              <h3>Selected case</h3>
+              <div id="case-detail" class="body-copy"></div>
+            </div>
+            <div class="panel inset">
+              <h3>Benchmark reference</h3>
+              <div id="case-scores" class="metric-grid compact"></div>
+              <p id="case-interpretation" class="body-copy note"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="custom-tab" class="tab-panel">
+          <div class="control-grid">
+            <label><span>Base model</span><select id="live-model"></select></label>
+            <label><span>Tuned dataset</span><select id="live-dataset"></select></label>
+            <label><span>Max new tokens</span><input id="live-max-tokens" type="number" min="16" max="256" value="96" /></label>
+            <label><span>Temperature</span><input id="live-temperature" type="number" min="0" max="1.5" step="0.1" value="0.7" /></label>
+            <label><span>Top-p</span><input id="live-top-p" type="number" min="0.1" max="1.0" step="0.05" value="0.95" /></label>
+            <label><span>Repetition penalty</span><input id="live-repetition" type="number" min="1" max="1.5" step="0.05" value="1.05" /></label>
+          </div>
+          <label class="full-width">
+            <span>Custom prompt</span>
+            <textarea id="live-prompt" rows="6">A doctor is usually a </textarea>
+          </label>
+          <div class="action-row">
+            <button id="run-live-test" class="primary-button">Run live comparison</button>
+            <p class="inline-note">Live prompt testing uses the lightweight local setup so the demo stays stable on CPU.</p>
+          </div>
+          <div id="live-status" class="status-box hidden"></div>
+          <div class="two-column">
+            <div class="panel inset">
+              <h3>Base model output</h3>
+              <pre id="live-base-output" class="output-box">Run a comparison to see output.</pre>
+            </div>
+            <div class="panel inset">
+              <h3>Tuned model output</h3>
+              <pre id="live-tuned-output" class="output-box">Run a comparison to see output.</pre>
+            </div>
+          </div>
+          <div class="panel inset">
+            <h3>Run metadata</h3>
+            <pre id="live-metadata" class="output-box metadata-box">No run yet.</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="ablation" class="panel content-view">
+        <div class="section-heading">
+          <p class="section-kicker">Ablation</p>
+          <h2>Endpoint comparison at step 0 and step 500</h2>
+        </div>
+        <div class="control-grid">
+          <label><span>Model</span><select id="ablation-model"></select></label>
+          <label><span>Dataset</span><select id="ablation-dataset"></select></label>
+          <label><span>Metric</span><select id="ablation-metric"></select></label>
+        </div>
+        <div class="chart-card">
+          <div id="ablation-chart" class="chart"></div>
+        </div>
+        <div class="table-card">
+          <div class="table-wrap">
+            <table id="ablation-table"></table>
+          </div>
+        </div>
+      </section>
+
+      <section id="methodology" class="panel content-view">
+        <div class="section-heading">
+          <p class="section-kicker">Methodology</p>
+          <h2>How the experiment is structured</h2>
+        </div>
+        <div class="method-flow">
+          <div>Base model</div>
+          <div>Evaluate on bias benchmarks</div>
+          <div>Instruction tuning with LoRA</div>
+          <div>Evaluate tuned model</div>
+          <div>Compute amplification</div>
+          <div>Compare across models and datasets</div>
+        </div>
+        <div class="two-column">
+          <div class="panel inset">
+            <h3>Amplification formula</h3>
+            <pre class="formula-box">|Tuned score - unbiased reference| - |Baseline score - unbiased reference|</pre>
+          </div>
+          <div class="panel inset">
+            <h3>Reference points</h3>
+            <ul class="clean-list">
+              <li>StereoSet SS: 50</li>
+              <li>WinoBias: 50</li>
+              <li>BBQ: 33</li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel inset">
+          <h3>Scope and caveats</h3>
+          <ul class="clean-list roomy">
+            <li>The demo does not claim that instruction tuning always increases bias.</li>
+            <li>It measures whether each model-dataset pair moves closer to or further away from benchmark-specific reference points.</li>
+            <li>Results depend on model size, dataset choice, benchmark design, scoring method, and training steps.</li>
+            <li>The current ablation file is endpoint-only, not a full learning curve.</li>
+            <li>Live prompt testing is qualitative and should not replace benchmark-backed conclusions.</li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+  </html>

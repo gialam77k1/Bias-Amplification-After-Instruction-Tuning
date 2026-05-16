@@ -1,0 +1,10 @@
+flask
+pandas
+numpy
+matplotlib
+seaborn
+torch
+transformers
+peft
+accelerate
+sentencepiece
