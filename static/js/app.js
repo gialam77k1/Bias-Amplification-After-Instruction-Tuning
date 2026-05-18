@@ -77,6 +77,23 @@ async function loadBootstrap() {
   state.data = await response.json();
 }
 
+async function readApiResponse(response) {
+  const rawText = await response.text();
+  if (!rawText) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(rawText);
+  } catch (error) {
+    return {
+      error: `Server returned a non-JSON response with status ${response.status}.`,
+      details: rawText.slice(0, 1200),
+      parse_error: error.message,
+    };
+  }
+}
+
 function setupTabs() {
   document.querySelectorAll(".tab-button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -378,9 +395,12 @@ function setupLiveLab() {
 
   async function runLiveTest() {
     const status = document.getElementById("live-status");
+    const metadata = document.getElementById("live-metadata");
     status.className = "status-box";
     status.textContent = "Running live comparison. The first load may take a while.";
     status.classList.remove("hidden");
+    runButton.disabled = true;
+    runButton.textContent = "Running...";
 
     const payload = {
       base_model: modelSelect.value,
@@ -398,21 +418,31 @@ function setupLiveLab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
+      const result = await readApiResponse(response);
       if (!response.ok) throw result;
 
       document.getElementById("live-base-output").textContent = result.base_output || "[No text generated]";
       document.getElementById("live-tuned-output").textContent = result.tuned_output || "[No text generated]";
-      document.getElementById("live-metadata").textContent = JSON.stringify(result, null, 2);
+      metadata.textContent = JSON.stringify(result, null, 2);
       status.textContent = "Live comparison completed.";
     } catch (error) {
       status.classList.add("error");
-      status.textContent =
-        error.error ||
+      const fallbackMessage =
+        error?.message ||
         "Live inference failed. Please retry with the default lightweight setting.";
-      if (error.details) {
-        document.getElementById("live-metadata").textContent = JSON.stringify(error, null, 2);
-      }
+      const details = error?.details ? ` Details: ${error.details}` : "";
+      status.textContent = (error?.error || fallbackMessage) + details;
+      metadata.textContent = JSON.stringify(
+        {
+          ...error,
+          request_payload: payload,
+        },
+        null,
+        2
+      );
+    } finally {
+      runButton.disabled = false;
+      runButton.textContent = "Run live comparison";
     }
   }
 

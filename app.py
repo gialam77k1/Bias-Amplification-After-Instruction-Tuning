@@ -136,7 +136,8 @@ def live_generate():
                 {
                     "error": (
                         "Live inference failed. The base model may still need to be downloaded, "
-                        "or the machine may not have enough memory for the selected model."
+                        "or the machine may not have enough memory for the selected model. "
+                        "Please run the app from the nlpdemo environment."
                     ),
                     "details": str(exc),
                 }
@@ -148,4 +149,4 @@ def live_generate():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False, use_reloader=False, threaded=False)
